@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fff8ec;
+  --foreground: #1b1b2f;
+
+  /* Sri Matha PG brand palette */
+  --color-navy: #11183f;        /* primary — headers, dark sections */
+  --color-purple-deep: #42146f;
+  --color-purple: #7a2cbf;      /* secondary accent */
+  --color-magenta: #e91e63;     /* attention accent, sparingly */
+  --color-gold: #f5b700;        /* attention accent, sparingly */
+  --color-gold-warm: #d99a24;
+  --color-teal: #087f8c;        /* small accent, icons */
+  --color-cream: #fff8ec;       /* main background, ~60% */
+  --color-white-soft: #fffcf7;
+  --color-blush: #fce7ef;
+  --color-teal-soft: #e4f5f4;
+  --color-ink: #1b1b2f;         /* main text */
+  --color-ink-soft: #68687a;    /* muted text */
+  --color-line: #ece3d4;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-jakarta);
+  --font-display: var(--font-jakarta);
+
+  --color-navy: var(--color-navy);
+  --color-purple-deep: var(--color-purple-deep);
+  --color-purple: var(--color-purple);
+  --color-magenta: var(--color-magenta);
+  --color-gold: var(--color-gold);
+  --color-gold-warm: var(--color-gold-warm);
+  --color-teal: var(--color-teal);
+  --color-cream: var(--color-cream);
+  --color-white-soft: var(--color-white-soft);
+  --color-blush: var(--color-blush);
+  --color-teal-soft: var(--color-teal-soft);
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-line: var(--color-line);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--color-magenta);
+  color: #fff;
+}
+
+.font-display {
+  font-family: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.font-accent {
+  font-family: var(--font-caveat), cursive;
+}
+
+/* subtle fade-up utility used with framer-motion fallback (no-js) */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+}

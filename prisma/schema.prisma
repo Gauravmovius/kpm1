@@ -1,0 +1,276 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  STAFF
+}
+
+enum RoomStatus {
+  AVAILABLE
+  PARTIALLY_OCCUPIED
+  FULLY_OCCUPIED
+  MAINTENANCE
+  INACTIVE
+}
+
+enum BedStatus {
+  AVAILABLE
+  OCCUPIED
+  MAINTENANCE
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  VISIT_SCHEDULED
+  VISITED
+  INTERESTED
+  BOOKED
+  NOT_INTERESTED
+}
+
+enum VisitStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum GalleryCategory {
+  EXTERIOR
+  ROOMS
+  KITCHEN
+  DINING
+  COMMON_AREA
+  WASHROOMS
+  AMENITIES
+  NEARBY
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(ADMIN)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Property {
+  id               String   @id @default(cuid())
+  name             String
+  description      String
+  address          String
+  city             String
+  state            String
+  pincode          String
+  latitude         Float?
+  longitude        Float?
+  phone            String
+  whatsapp         String
+  email            String
+  checkInPolicy    String?
+  checkOutPolicy   String?
+  minimumStay      String?
+  noticePeriod     String?
+  securityDeposit  String?
+  foodAvailable    Boolean  @default(true)
+  houseRules       String?
+  rating           Float    @default(4.8)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  roomTypes    RoomType[]
+  amenities    Amenity[]
+  galleryImages GalleryImage[]
+  reviews      Review[]
+  settings     Settings?
+}
+
+model RoomType {
+  id               String   @id @default(cuid())
+  propertyId       String
+  property         Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  slug             String   @unique
+  name             String
+  occupancy        Int
+  monthlyRent      Int
+  securityDeposit  Int
+  maintenance      Int      @default(0)
+  roomSize         String?
+  ac               Boolean  @default(false)
+  attachedBathroom Boolean  @default(true)
+  balcony          Boolean  @default(false)
+  description      String?
+  image            String?
+  featured         Boolean  @default(false)
+  displayOrder     Int      @default(0)
+  archived         Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  rooms    Room[]
+  leads    Lead[]
+  visits   Visit[]
+  bookings Booking[]
+}
+
+model Room {
+  id         String     @id @default(cuid())
+  roomTypeId String
+  roomType   RoomType   @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+  number     String
+  floor      String?
+  status     RoomStatus @default(AVAILABLE)
+  notes      String?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  beds     Bed[]
+  bookings Booking[]
+
+  @@unique([roomTypeId, number])
+}
+
+model Bed {
+  id        String    @id @default(cuid())
+  roomId    String
+  room      Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  label     String
+  status    BedStatus @default(AVAILABLE)
+  tenantName String?
+  notes     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  bookings Booking[]
+
+  @@unique([roomId, label])
+}
+
+model Amenity {
+  id           String   @id @default(cuid())
+  propertyId   String
+  property     Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  icon         String
+  label        String
+  displayOrder Int      @default(0)
+  enabled      Boolean  @default(true)
+  createdAt    DateTime @default(now())
+}
+
+model GalleryImage {
+  id           String          @id @default(cuid())
+  propertyId   String
+  property     Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  url          String
+  category     GalleryCategory
+  caption      String?
+  isCover      Boolean         @default(false)
+  displayOrder Int             @default(0)
+  createdAt    DateTime        @default(now())
+}
+
+model Lead {
+  id                 String     @id @default(cuid())
+  name               String
+  phone              String
+  email              String?
+  roomTypeId         String?
+  roomType           RoomType?  @relation(fields: [roomTypeId], references: [id])
+  budget             Int?
+  preferredMoveIn    DateTime?
+  preferredVisitDate DateTime?
+  message            String?
+  source             String     @default("website")
+  status             LeadStatus @default(NEW)
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  visits   Visit[]
+  bookings Booking[]
+}
+
+model Visit {
+  id             String      @id @default(cuid())
+  leadId         String?
+  lead           Lead?       @relation(fields: [leadId], references: [id])
+  name           String
+  phone          String
+  email          String?
+  roomTypeId     String?
+  roomType       RoomType?   @relation(fields: [roomTypeId], references: [id])
+  preferredDate  DateTime
+  preferredTime  String
+  message        String?
+  status         VisitStatus @default(PENDING)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+model Booking {
+  id          String        @id @default(cuid())
+  leadId      String?
+  lead        Lead?         @relation(fields: [leadId], references: [id])
+  customerName String
+  customerPhone String
+  roomTypeId  String
+  roomType    RoomType      @relation(fields: [roomTypeId], references: [id])
+  roomId      String?
+  room        Room?         @relation(fields: [roomId], references: [id])
+  bedId       String?
+  bed         Bed?          @relation(fields: [bedId], references: [id])
+  moveInDate  DateTime
+  amount      Int
+  deposit     Int
+  status      BookingStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  name       String
+  role       String?
+  photo      String?
+  rating     Int
+  quote      String
+  published  Boolean  @default(false)
+  featured   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Settings {
+  id             String   @id @default(cuid())
+  propertyId     String   @unique
+  property       Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  whatsappNumber String
+  metaTitle      String?
+  metaDescription String?
+  updatedAt      DateTime @updatedAt
+}
